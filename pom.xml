@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>Task1</module>
+      <module>Task2</module>
     </modules>
 
     <name>OpenMP_Fedorov</name>

@@ -29,9 +29,6 @@ public class ImageAnalyzer extends AbstractImageAnalyzer implements Runnable {
                 int r = color.getRed();
                 int g = color.getGreen();
                 int b = color.getBlue();
-//                int r = (pixel >> 16) & 0xff;
-//                int g = (pixel >> 8) & 0xff;
-//                int b = pixel & 0xff;
                 double i = (r + g + b) / 3d;
                 int newRGB = QUANTUMS[(int) (i / Q_WIDTH)];
                 image.get().setRGB(x, y, newRGB);

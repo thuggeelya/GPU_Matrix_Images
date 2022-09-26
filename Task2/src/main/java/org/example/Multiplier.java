@@ -1,22 +1,19 @@
 package org.example;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class Multiplier implements Callable<Map.Entry<Integer, Float[][]>> {
+public class Multiplier implements Callable<Float[][]> {
 
     private final int from;
     private final int to;
     private final int size;
-    private final int order;
     private final float[][] A;
     private final float[][] B;
     private final Float[][] result;
 
-    public Multiplier(int from, int to, float[][] a, float[][] b, int order) {
+    public Multiplier(int from, int to, float[][] a, float[][] b) {
         this.from = from;
         this.to = to;
-        this.order = order;
         size = a.length;
         A = a;
         B = b;
@@ -27,14 +24,13 @@ public class Multiplier implements Callable<Map.Entry<Integer, Float[][]>> {
         from = 0;
         size = a.length;
         to = size;
-        order = 0;
         A = a;
         B = b;
         result = new Float[to - from][size];
     }
 
     @Override
-    public Map.Entry<Integer, Float[][]> call() {
+    public Float[][] call() {
         for (int i = from; i < to; ++i) {
             for (int j = 0; j < size; ++j) {
                 int iResult = i - from;
@@ -46,6 +42,6 @@ public class Multiplier implements Callable<Map.Entry<Integer, Float[][]>> {
             }
         }
 
-        return Map.entry(order, result);
+        return result;
     }
 }

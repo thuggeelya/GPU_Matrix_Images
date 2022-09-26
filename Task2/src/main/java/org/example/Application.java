@@ -28,7 +28,7 @@ public class Application {
         int nIterations = 10;
         List<Long> multipleThreadTimeList = new ArrayList<>();
         List<Long> singleThreadTimeList = new ArrayList<>();
-        List<Future<Map.Entry<Integer, Float[][]>>> futures = new ArrayList<>(nThreads);
+        List<Future<Float[][]>> futures = new ArrayList<>(nThreads);
 
         for (int i = 0; i < nIterations; i++) {
             System.out.println("Iteration #" + i);
@@ -39,22 +39,23 @@ public class Application {
 
             for (int j = 0; j < nThreads; j++) {
                 int remains = (j == nThreads - 1) ? SIZE % nThreads : 0;
-                futures.add(executor.submit(new Multiplier(j * step, (j + 1) * step + remains, A, B, j)));
+                futures.add(executor.submit(new Multiplier(j * step, (j + 1) * step + remains, A, B)));
             }
 
             Map<Integer, Float[][]> resultMap = new TreeMap<>();
+            int next = 0;
 
-            for (Future<Map.Entry<Integer, Float[][]>> future : futures) {
+            for (Future<Float[][]> future : futures) {
                 try {
-                    Map.Entry<Integer, Float[][]> entry = future.get();
-                    resultMap.put(entry.getKey(), entry.getValue());
+                    Float[][] matrix = future.get();
+                    resultMap.put(next++, matrix);
                 } catch (InterruptedException | ExecutionException e) {
                     System.err.println(e.getMessage());
                 }
             }
 
             Float[][] resultMultipleThread = new Float[SIZE][SIZE];
-            int next = 0;
+            next = 0;
 
             for (Map.Entry<Integer, Float[][]> entry : resultMap.entrySet()) {
                 Float[][] val = entry.getValue();
@@ -73,7 +74,7 @@ public class Application {
 
             try {
                 start = currentTimeMillis();
-                Float[][] resultSingleThread = executor.submit(new Multiplier(A, B)).get().getValue();
+                Float[][] resultSingleThread = executor.submit(new Multiplier(A, B)).get();
                 timeSpent = currentTimeMillis() - start;
 
                 for (int r1 = 0; r1 < SIZE; ++r1) {

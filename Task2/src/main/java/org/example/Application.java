@@ -10,49 +10,52 @@ import static java.lang.System.currentTimeMillis;
 
 public class Application {
 
-    private static final int SIZE = 4096;
+    private static int SIZE = 4096;
 
     public static void main(String[] args) {
-        Random random = new Random();
-        float[][] A = new float[SIZE][SIZE];
-        float[][] B = new float[SIZE][SIZE];
-
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                A[i][j] = random.nextFloat();
-                B[i][j] = random.nextFloat();
+        if (args.length >= 1) {
+            try {
+                SIZE = Integer.parseInt(args[0]);
+            } catch (NumberFormatException nfe) {
+                SIZE = 4096;
             }
         }
 
-        int nIterations = 10;
+        Random random = new Random();
+        float[][] a = new float[SIZE][SIZE];
+        float[][] b = new float[SIZE][SIZE];
+        @SuppressWarnings("unused")
+        float[][] c = new float[SIZE][SIZE];
 
-        for (int i = 0; i < nIterations; i++) {
-            System.out.println("Iteration #" + i);
-            long start = currentTimeMillis();
-            @SuppressWarnings("unused")
-            Float[][] C = new Float[SIZE][SIZE];
-            runGPU(A, B, C);
-            long timeSpent = currentTimeMillis() - start;
-            System.out.println("GPU time, ms: " + timeSpent);
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                a[i][j] = random.nextFloat();
+                b[i][j] = random.nextFloat();
+            }
         }
-    }
 
-    private static void runGPU(float[][] a, float[][] b, Float[][] c) {
-        new TaskGraph("s0")
+        TaskGraph taskGraph = new TaskGraph("s0")
                 .transferToDevice(DataTransferMode.FIRST_EXECUTION, a, b)
                 .task("t0", Application::taskToExecute, a, b, c, SIZE)
-                .transferToHost((Object) c)
-                .execute();
+                .transferToHost((Object) c);
+
+        long start = currentTimeMillis();
+        taskGraph.execute();
+        long timeSpent = currentTimeMillis() - start;
+        System.out.println("GPU time, ms: " + timeSpent);
     }
 
-    public static void taskToExecute(float[][] a, float[][] b, Float[][] c, int size) {
+    private static void taskToExecute(float[][] a, float[][] b, float[][] c, int size) {
         for (@Parallel int i = 0; i < size; ++i) {
             for (@Parallel int j = 0; j < size; ++j) {
-                c[i][j] = 0f;
+                c[i][j] = 0.0f;
+                float sum = 0.0f;
 
                 for (int j2 = 0; j2 < size; ++j2) {
-                    c[i][j] += a[i][j2] * b[j2][j];
+                    sum += a[i][j2] * b[j2][j];
                 }
+
+                c[i][j] = sum;
             }
         }
     }
